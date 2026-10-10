@@ -1,4 +1,5 @@
 import Layout from './components/Layout'
+import ProductCrumb from './components/ProductCrumb'
 import ProductListPage from './pages/ProductListPage'
 import ProductDetailsPage from './pages/ProductDetailsPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -14,7 +15,7 @@ export const routes = [
       {
         path: 'product/:id',
         element: <ProductDetailsPage />,
-        handle: { crumb: () => 'Product details' },
+        handle: { crumb: (match) => <ProductCrumb id={match.params.id} /> },
       },
       { path: '*', element: <NotFoundPage />, handle: { crumb: () => 'Not found' } },
     ],

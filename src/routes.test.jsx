@@ -3,8 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { renderApp } from './test/renderApp'
 
-// The list page fetches products; this suite only cares about routing.
-vi.mock('./services/api', () => ({ getProducts: vi.fn(() => Promise.resolve([])) }))
+// The pages fetch data; this suite only cares about routing. Products load as an
+// empty list, and a product never finishes loading (so its page stays in "loading").
+vi.mock('./services/api', () => ({
+  getProducts: vi.fn(() => Promise.resolve([])),
+  getProduct: vi.fn(() => new Promise(() => {})),
+}))
 
 function breadcrumbs() {
   return within(screen.getByRole('navigation', { name: /breadcrumb/i }))
@@ -21,7 +25,7 @@ describe('routing and header', () => {
   it('shows the details page with a breadcrumb link back to the list', async () => {
     const { router } = renderApp('/product/abc')
 
-    expect(screen.getByRole('heading', { name: /product abc/i })).toBeInTheDocument()
+    expect(screen.getByText(/loading product/i)).toBeInTheDocument()
     expect(breadcrumbs().getByText('Product details')).toHaveAttribute('aria-current', 'page')
 
     await userEvent.click(breadcrumbs().getByRole('link', { name: 'Products' }))

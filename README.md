@@ -42,6 +42,24 @@ so they survive page reloads. Once an entry is older than an hour it is discarde
 again. If the browser blocks storage (private mode, quota exceeded), the app keeps working
 without the cache. `POST /api/cart` is never cached.
 
+### Notes on the API
+
+- **Cart count:** `POST /api/cart` is a mock that always answers `{ "count": 1 }`, whatever
+  was in the cart before. The app treats that number as "items just added" and keeps the
+  running total on the client (persisted in `localStorage`), so the header counter goes
+  1, 2, 3… instead of being stuck at 1.
+- **Swapped display fields:** in the product details, `displayResolution` holds the screen
+  size ("5.5 inches") and `displaySize` holds the resolution ("720 x 1280 pixels"). The UI
+  labels each by what it actually contains.
+- **Mixed field types:** some attributes (cameras, OS) come as a string for some products and
+  as an array for others. Both are normalised to readable text, and empty values are hidden.
+- **Prices:** sent as strings, and empty for some products ("Price not available").
+- **Unknown product IDs:** the API answers `500` rather than `404`, so the details page shows
+  a generic error with a retry button and a link back to the list.
+- **Cold starts:** the API is hosted on a free tier that sleeps when idle. The first request
+  can take up to a minute; after 3 seconds the loading state tells the user the server is
+  waking up.
+
 ## Getting started
 
 Requires Node.js 20+ (developed with Node 24).

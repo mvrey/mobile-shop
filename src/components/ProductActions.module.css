@@ -1,0 +1,21 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.submit {
+  width: 100%;
+  padding: 14px 20px;
+}
+
+.feedback {
+  min-height: 1.5em;
+  margin: -8px 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: #b42318;
+}
