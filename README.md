@@ -33,6 +33,15 @@ Base URL: `https://itx-frontend-test.onrender.com/`
 | GET    | `/api/product/:id` | Product details                              |
 | POST   | `/api/cart`        | Add `{ id, colorCode, storageCode }` to cart |
 
+The base URL can be overridden with the `VITE_API_BASE_URL` environment variable.
+
+### Caching
+
+`GET` responses are stored in `localStorage` with a 1-hour expiry (`src/services/cache.js`),
+so they survive page reloads. Once an entry is older than an hour it is discarded and fetched
+again. If the browser blocks storage (private mode, quota exceeded), the app keeps working
+without the cache. `POST /api/cart` is never cached.
+
 ## Getting started
 
 Requires Node.js 20+ (developed with Node 24).
