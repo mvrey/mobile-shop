@@ -44,6 +44,7 @@ describe('routing and header', () => {
     renderApp('/does/not/exist')
 
     expect(screen.getByRole('heading', { name: /page not found/i })).toBeInTheDocument()
+    expect(document.title).toBe('Page not found | Mobile Shop')
   })
 
   it('shows the cart count in the header', () => {

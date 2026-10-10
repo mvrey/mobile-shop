@@ -28,6 +28,7 @@ function ProductListPage() {
 
   return (
     <section>
+      <title>Products | Mobile Shop</title>
       <div className={styles.toolbar}>
         <div>
           <h1 className={styles.title}>Products</h1>

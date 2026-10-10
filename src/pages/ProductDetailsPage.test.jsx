@@ -51,6 +51,7 @@ describe('ProductDetailsPage', () => {
       ]),
     )
     expect(screen.getByText('720 x 1280 pixels (~210 ppi pixel density)')).toBeInTheDocument()
+    expect(document.title).toBe('Acer Iconia Talk S | Mobile Shop')
   })
 
   it('shows the product name in the breadcrumbs', async () => {

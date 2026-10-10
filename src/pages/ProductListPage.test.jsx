@@ -28,6 +28,7 @@ describe('ProductListPage', () => {
     expect(screen.getByText(/loading products/i)).toBeInTheDocument()
     expect(await screen.findByText('3 of 3 products')).toBeInTheDocument()
     expect(productNames()).toEqual(['Liquid Z6', 'Iconia Talk S', 'Idol 5'])
+    expect(document.title).toBe('Products | Mobile Shop')
   })
 
   it('shows image, brand, model and price on each card, and links to its details', async () => {

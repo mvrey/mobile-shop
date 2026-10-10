@@ -15,8 +15,11 @@ function ProductDetailsPage() {
   const location = useLocation()
   const backTo = location.state?.from ?? '/'
 
+  const title = product ? `${product.brand} ${product.model}` : 'Product'
+
   return (
     <article>
+      <title>{`${title} | Mobile Shop`}</title>
       <Link to={backTo} className={styles.back}>
         ← Back to products
       </Link>

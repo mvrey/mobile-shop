@@ -1,7 +1,13 @@
 .search {
   position: relative;
   width: 100%;
-  max-width: 320px;
+}
+
+/* Full width on phones (it wraps below the title); fixed width beside it on larger screens. */
+@media (min-width: 600px) {
+  .search {
+    max-width: 320px;
+  }
 }
 
 .icon {
