@@ -1,7 +1,10 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderApp } from './test/renderApp'
+
+// The list page fetches products; this suite only cares about routing.
+vi.mock('./services/api', () => ({ getProducts: vi.fn(() => Promise.resolve([])) }))
 
 function breadcrumbs() {
   return within(screen.getByRole('navigation', { name: /breadcrumb/i }))
