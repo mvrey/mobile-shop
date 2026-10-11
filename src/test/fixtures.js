@@ -1,3 +1,5 @@
+import { toProduct, toProductSummary } from '../features/catalog/domain/product'
+
 // Trimmed copy of a real API response: GET /api/product/ZmGrkLRPXOTpxsU4jjAcv
 export const iconiaTalkS = {
   id: 'ZmGrkLRPXOTpxsU4jjAcv',
@@ -23,3 +25,7 @@ export const iconiaTalkS = {
     ],
   },
 }
+
+// The same product in the app's domain model, as the catalog API returns it.
+export const iconiaTalkSProduct = toProduct(iconiaTalkS)
+export const iconiaTalkSSummary = toProductSummary(iconiaTalkS)

@@ -55,26 +55,39 @@ No other runtime dependencies: fetching, caching and state use the browser and R
 
 ## Project structure
 
+Code is grouped by feature. Dependencies point one way: `app` → `features` → `shared`.
+
 ```
 src/
-├── main.jsx              Entry point: router + cart provider
-├── routes.jsx            Route table; each route declares its breadcrumb label
-├── services/
-│   ├── api.js            fetch wrapper + getProducts / getProduct / addToCart
-│   └── cache.js          localStorage cache with 1-hour expiry
-├── hooks/
-│   ├── useRequest.js     Generic "load async data" hook: { data, error, loading, retry }
-│   ├── useProducts.js
-│   └── useProduct.js
-├── cart/                 Cart count shared via React context, persisted in localStorage
-├── products/             Pure functions: search filter, price formatting, spec rows
-├── components/           Header, breadcrumbs, cards, selectors, loading/error states…
-├── pages/                Product list, product details, not found, unexpected error
-└── test/                 Test setup, render helper, fixtures
+├── main.jsx                 Entry point: router + cart provider
+├── app/                     App shell: route table, layout, header, breadcrumbs,
+│                            not-found and unexpected-error pages
+├── features/
+│   ├── catalog/             Browsing products
+│   │   ├── api/             getProducts / getProduct (cached, mapped to the domain model)
+│   │   ├── domain/          Product model + API mappers, search filter, price, spec rows
+│   │   ├── hooks/           useProducts, useProduct
+│   │   ├── components/      ProductCard, SearchBar, ProductCrumb
+│   │   └── pages/           Product list, product details
+│   └── cart/                The cart: count, "add to cart" operation, badge, actions form
+│       └── api/             POST /api/cart
+├── shared/
+│   ├── api/                 fetch wrapper (httpClient) + cache-aware fetcher with dedupe
+│   ├── cache/               Key/value cache with 1-hour expiry, persisted in localStorage
+│   ├── storage/             Namespaced localStorage wrapper that never throws
+│   ├── hooks/               useRequest: { data, error, loading, retry }
+│   └── ui/                  Loading/error states, option selector
+└── test/                    Test setup, render helper, fixtures
 ```
 
 ## Design decisions
 
+- **The app has its own product model.** The API's quirks (misspelled fields, swapped
+  display fields, string prices, string-or-array attributes) are fixed once, in the mappers in
+  `features/catalog/domain/product.js`. Components only see clean `Product` objects.
+- **The cart owns its operation.** `CartProvider` exposes `addToCart(selection)`, which calls
+  the API and updates the count; the actions form only collects the selection and reports the
+  outcome. The API call is injected, so tests can replace it.
 - **Caching lives in the API layer**, not in components. `getProducts()` and `getProduct(id)`
   return cached data when it is fresh and only hit the network otherwise. Concurrent requests
   for the same data share one network call (React StrictMode runs effects twice in
@@ -116,9 +129,9 @@ Base URL: `https://itx-frontend-test.onrender.com/` (override with `VITE_API_BAS
 
 ### Caching
 
-`GET` responses are stored in `localStorage` with a 1-hour expiry (`src/services/cache.js`),
-so they survive page reloads. Once an entry is older than an hour it is discarded and fetched
-again. If the browser blocks storage (private mode, quota exceeded), the app keeps working
+`GET` responses are stored in `localStorage` with a 1-hour expiry
+(`src/shared/cache/storageCache.js`), so they survive page reloads. Once an entry is older
+than an hour it is discarded and fetched again. If the browser blocks storage (private mode, quota exceeded), the app keeps working
 without the cache. `POST /api/cart` is never cached.
 
 ### Notes on the API
