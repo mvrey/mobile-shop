@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useRouteError } from 'react-router'
 import styles from './RouteErrorPage.module.css'
 
@@ -5,7 +6,10 @@ import styles from './RouteErrorPage.module.css'
 // It replaces the whole layout, so it keeps its own way back home.
 function RouteErrorPage() {
   const error = useRouteError()
-  console.error(error)
+
+  useEffect(() => {
+    console.error(error)
+  }, [error])
 
   return (
     <main className={styles.page}>

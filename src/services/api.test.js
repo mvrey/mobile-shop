@@ -31,7 +31,8 @@ describe('api', () => {
       fetchMock.mockReturnValue(jsonResponse(products))
 
       await expect(getProducts()).resolves.toEqual(products)
-      expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/product`, expect.any(Object))
+      // A plain GET with no custom headers, so the browser sends no CORS preflight.
+      expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/product`, undefined)
     })
 
     it('serves repeated calls from the cache', async () => {
@@ -84,7 +85,7 @@ describe('api', () => {
       await getProduct('a')
 
       expect(fetchMock).toHaveBeenCalledTimes(2)
-      expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/product/a`, expect.any(Object))
+      expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/product/a`, undefined)
     })
   })
 
@@ -99,10 +100,22 @@ describe('api', () => {
         `${API_BASE_URL}/api/cart`,
         expect.objectContaining({
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: 'a', colorCode: 1000, storageCode: 2000 }),
         }),
       )
     })
+
+    it.each([{}, { count: 'one' }, { count: -1 }, null])(
+      'rejects a response without a valid count: %j',
+      async (body) => {
+        fetchMock.mockReturnValue(jsonResponse(body))
+
+        await expect(addToCart({ id: 'a', colorCode: 1000, storageCode: 2000 })).rejects.toThrow(
+          ApiError,
+        )
+      },
+    )
 
     it('is never cached', async () => {
       fetchMock.mockImplementation(() => jsonResponse({ count: 1 }))

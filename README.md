@@ -6,7 +6,8 @@ front-end technical test with React and plain JavaScript.
 - **Product list:** the full catalogue in a responsive grid (1 to 4 per row depending on
   screen width), with a search box that filters by brand and model as you type.
 - **Product details:** image on one side; specifications and purchase actions (storage and
-  color selectors, "Add to cart") on the other. Stacks vertically on phones.
+  color selectors, "Add to cart") on the other. Two columns on every screen size; on phones
+  the image column is narrower.
 - **Header:** the app title links home, breadcrumbs show where you are (including the
   product's name), and the cart counter is visible on every view and survives reloads.
 - **Client-side cache:** API responses are kept in the browser for 1 hour, then fetched again.

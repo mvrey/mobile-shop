@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CartContext } from './CartContext'
 
 const STORAGE_KEY = 'mobile-shop:cart-count'
@@ -17,16 +17,18 @@ function readStoredCount() {
 export function CartProvider({ children }) {
   const [count, setCount] = useState(readStoredCount)
 
+  // Persisting is a side effect, so it lives here and not in the state updater
+  // (React may call updaters more than once).
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(count))
+    } catch {
+      // Storage unavailable: the count still works for this session.
+    }
+  }, [count])
+
   const addItems = useCallback((quantity) => {
-    setCount((previous) => {
-      const next = previous + quantity
-      try {
-        localStorage.setItem(STORAGE_KEY, String(next))
-      } catch {
-        // Storage unavailable: the count still works for this session.
-      }
-      return next
-    })
+    setCount((previous) => previous + quantity)
   }, [])
 
   const value = useMemo(() => ({ count, addItems }), [count, addItems])

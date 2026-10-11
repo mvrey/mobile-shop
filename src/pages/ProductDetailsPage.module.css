@@ -11,12 +11,29 @@
   text-decoration: underline;
 }
 
-/* Stacked on phones; image | details side by side from tablet width up. */
+/* Always two columns, as the spec asks: image | details. On phones the image
+   column is narrower and the panels tighter, so the details still fit. */
 .columns {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 12px;
   align-items: start;
+}
+
+.imagePanel {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
 }
 
 @media (min-width: 720px) {
@@ -28,22 +45,13 @@
   .imagePanel {
     position: sticky;
     top: 96px;
+    padding: 32px;
   }
-}
 
-.imagePanel {
-  display: flex;
-  justify-content: center;
-  padding: 32px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: #fff;
-}
-
-.image {
-  width: auto;
-  height: 300px;
-  object-fit: contain;
+  .image {
+    width: auto;
+    height: 300px;
+  }
 }
 
 .info {
@@ -53,7 +61,7 @@
 }
 
 .panel {
-  padding: 24px;
+  padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
@@ -69,7 +77,7 @@
 
 .title {
   margin: 2px 0 4px;
-  font-size: 1.75rem;
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
   line-height: 1.2;
 }
 
@@ -90,10 +98,11 @@
   font-size: 0.875rem;
 }
 
+/* Label above value on phones, side by side when there is room. */
 .specRow {
   display: grid;
-  grid-template-columns: minmax(110px, 35%) 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 2px;
   padding: 8px 0;
   border-top: 1px solid var(--color-border);
 }
@@ -105,4 +114,15 @@
 .specRow dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+@media (min-width: 720px) {
+  .panel {
+    padding: 24px;
+  }
+
+  .specRow {
+    grid-template-columns: minmax(110px, 35%) 1fr;
+    gap: 12px;
+  }
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useLocation, useNavigationType, useSearchParams } from 'react-router'
 import ErrorState from '../components/ErrorState'
 import LoadingState from '../components/LoadingState'
 import ProductCard from '../components/ProductCard'
@@ -12,9 +12,21 @@ function ProductListPage() {
   const { data: products, error, loading, retry } = useProducts()
 
   // The query lives in the URL (?q=...), so it survives going to a product and back.
-  // The input keeps its own state so typing stays instant.
+  // The input keeps its own state so typing stays instant: URL updates land
+  // asynchronously, and binding the input to them could drop keystrokes.
   const [searchParams, setSearchParams] = useSearchParams()
-  const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
+  const urlQuery = searchParams.get('q') ?? ''
+  const [query, setQuery] = useState(urlQuery)
+
+  // Our own updates replace the history entry. Any other navigation that lands
+  // here while mounted (e.g. clicking the app title) sets the query from the URL.
+  const location = useLocation()
+  const navigationType = useNavigationType()
+  const [seenLocationKey, setSeenLocationKey] = useState(location.key)
+  if (location.key !== seenLocationKey) {
+    setSeenLocationKey(location.key)
+    if (navigationType !== 'REPLACE') setQuery(urlQuery)
+  }
 
   const handleQueryChange = (value) => {
     setQuery(value)

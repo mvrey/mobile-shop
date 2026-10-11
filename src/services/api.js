@@ -11,11 +11,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-  })
+async function request(path, options) {
+  const response = await fetch(`${API_BASE_URL}${path}`, options)
   if (!response.ok) {
     throw new ApiError(`Request to ${path} failed with status ${response.status}`, response.status)
   }
@@ -52,9 +49,16 @@ export function getProduct(id) {
 }
 
 // Not cached: it changes server state, and every call must reach the API.
-export function addToCart({ id, colorCode, storageCode }) {
-  return request('/api/cart', {
+// Only this request sends a JSON body, so only it sets Content-Type: on a GET the
+// header would make the browser send an extra CORS preflight request first.
+export async function addToCart({ id, colorCode, storageCode }) {
+  const response = await request('/api/cart', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, colorCode, storageCode }),
   })
+  if (!Number.isInteger(response?.count) || response.count < 0) {
+    throw new ApiError('Unexpected response from /api/cart')
+  }
+  return { count: response.count }
 }

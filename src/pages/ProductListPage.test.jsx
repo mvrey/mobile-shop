@@ -72,6 +72,18 @@ describe('ProductListPage', () => {
     expect(productNames()).toEqual(['Idol 5'])
   })
 
+  it('clears the search when the app title is clicked', async () => {
+    getProducts.mockResolvedValue(products)
+    const { router } = renderApp('/?q=idol')
+    const search = await screen.findByRole('searchbox')
+
+    await userEvent.click(screen.getByRole('link', { name: 'Mobile Shop' }))
+
+    expect(router.state.location.search).toBe('')
+    expect(search).toHaveValue('')
+    expect(productNames()).toEqual(['Liquid Z6', 'Iconia Talk S', 'Idol 5'])
+  })
+
   it('says so when nothing matches', async () => {
     getProducts.mockResolvedValue(products)
     renderApp('/?q=nokia')
