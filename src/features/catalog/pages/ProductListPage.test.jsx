@@ -39,7 +39,10 @@ describe('ProductListPage', () => {
     renderApp('/')
 
     const card = await screen.findByRole('link', { name: /liquid z6/i })
-    expect(within(card).getByRole('img', { name: 'Acer Liquid Z6' })).toHaveAttribute('src', '/z6.jpg')
+    expect(within(card).getByRole('img', { name: 'Acer Liquid Z6' })).toHaveAttribute(
+      'src',
+      '/z6.jpg',
+    )
     expect(within(card).getByText('Acer')).toBeInTheDocument()
     expect(within(card).getByText('€120')).toBeInTheDocument()
     expect(card).toHaveAttribute('href', '/product/z6')

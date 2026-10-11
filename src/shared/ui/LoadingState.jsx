@@ -5,6 +5,7 @@ export const SLOW_THRESHOLD_MS = 3000
 
 // The API runs on a free hosting tier that sleeps when idle; the first request
 // after a while can take up to a minute. If loading is slow, say so.
+/** @param {{ message?: string }} props */
 function LoadingState({ message = 'Loading…' }) {
   const [isSlow, setIsSlow] = useState(false)
 

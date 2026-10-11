@@ -6,6 +6,7 @@ import styles from './ProductActions.module.css'
 // When there is a single option, it is selected from the start.
 const initialSelection = (options) => (options.length === 1 ? options[0].code : null)
 
+/** @param {{ product: import('../../catalog/domain/product').Product }} props */
 function ProductActions({ product }) {
   const { colors, storages } = product.options
   const [storageCode, setStorageCode] = useState(() => initialSelection(storages))

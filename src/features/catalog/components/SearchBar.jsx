@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import styles from './SearchBar.module.css'
 
+/** @param {{ value: string, onChange: (value: string) => void }} props */
 function SearchBar({ value, onChange }) {
   const inputId = useId()
 

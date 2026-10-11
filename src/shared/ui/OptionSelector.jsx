@@ -2,6 +2,15 @@ import styles from './OptionSelector.module.css'
 
 // A group of radio buttons styled as pills. Native radios give keyboard
 // navigation (arrow keys) and screen-reader support for free.
+/**
+ * @param {{
+ *   label: string,
+ *   name: string,
+ *   options: { code: number, name: string }[],
+ *   selected: number | null,
+ *   onSelect: (code: number) => void,
+ * }} props
+ */
 function OptionSelector({ label, name, options, selected, onSelect }) {
   return (
     <fieldset className={styles.group}>

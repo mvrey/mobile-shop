@@ -31,7 +31,9 @@ describe('ProductDetailsPage', () => {
     renderApp(path)
 
     expect(screen.getByText(/loading product/i)).toBeInTheDocument()
-    expect(await screen.findByRole('heading', { level: 1, name: 'Iconia Talk S' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Iconia Talk S' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Acer Iconia Talk S' })).toHaveAttribute(
       'src',
       iconiaTalkS.imageUrl,
@@ -112,7 +114,10 @@ describe('ProductDetailsPage', () => {
   it('can add straight away when every option has a single choice', async () => {
     getProduct.mockResolvedValue({
       ...iconiaTalkS,
-      options: { colors: [{ code: 1000, name: 'Black' }], storages: [{ code: 2000, name: '16 GB' }] },
+      options: {
+        colors: [{ code: 1000, name: 'Black' }],
+        storages: [{ code: 2000, name: '16 GB' }],
+      },
     })
     renderApp(path)
 
@@ -140,7 +145,9 @@ describe('ProductDetailsPage', () => {
     expect(alert).toHaveTextContent(/couldn't load this product/i)
 
     await userEvent.click(within(alert).getByRole('button', { name: /try again/i }))
-    expect(await screen.findByRole('heading', { level: 1, name: 'Iconia Talk S' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Iconia Talk S' }),
+    ).toBeInTheDocument()
   })
 
   it('says when the product does not exist, without offering a retry', async () => {

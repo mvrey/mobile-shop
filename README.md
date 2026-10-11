@@ -28,8 +28,18 @@ npm start          # dev server at http://localhost:5173
 | `npm test`      | Runs the test suite once (Vitest)       |
 | `npm run lint`  | Lints the code (ESLint)                 |
 
-Extras: `npm run preview` serves the production build locally, and `npm run test:watch`
-runs the tests in watch mode.
+Extras:
+
+| Script                  | What it does                                |
+| ----------------------- | ------------------------------------------- |
+| `npm run preview`       | Serves the production build locally         |
+| `npm run test:watch`    | Runs the tests in watch mode                |
+| `npm run test:coverage` | Runs the tests with a coverage report       |
+| `npm run format`        | Formats the code (Prettier)                 |
+| `npm run format:check`  | Checks formatting without changing any file |
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint, format check, tests and
+build on every push and pull request.
 
 > **First load can be slow.** The API is hosted on a free tier that sleeps when idle, so the
 > first request may take up to a minute. After 3 seconds the app tells the user the server
@@ -48,8 +58,10 @@ rewrite rule.
 - [Vite](https://vite.dev/) for the dev server and production build
 - [React Router](https://reactrouter.com/) for client-side routing (SPA, no SSR)
 - [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/) + jsdom for tests
-- [ESLint](https://eslint.org/) with the React Hooks rules
+- [ESLint](https://eslint.org/) with the React Hooks and accessibility (jsx-a11y) rules, and
+  [Prettier](https://prettier.io/) for formatting
 - CSS Modules for component styles (no UI library)
+- JSDoc types for the domain model and component props, for editor hints without TypeScript
 
 No other runtime dependencies: fetching, caching and state use the browser and React itself.
 
@@ -111,9 +123,10 @@ src/
 npm test
 ```
 
-51 tests across the API client and cache, the cart, pure helpers, and full-page behaviour.
+94 tests (over 99% line coverage, `npm run test:coverage`): unit tests for the HTTP client,
+cache, storage, domain mappers and helpers, hooks and shared components, plus full-page tests.
 Page tests render the whole app (router, header, providers) at a given URL and only replace
-the API module, so they exercise real routing, hooks and components the way a user would:
+the API calls, so they exercise real routing, hooks and components the way a user would:
 typing in the search box, choosing options, clicking "Add to cart" and checking the header.
 Fixtures are trimmed copies of real API responses.
 

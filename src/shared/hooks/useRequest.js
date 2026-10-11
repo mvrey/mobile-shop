@@ -9,7 +9,12 @@ export function useRequest(key, load) {
   const [attempt, setAttempt] = useState(0)
   // The result remembers which request produced it, so `loading` can be derived:
   // if the stored result is not for the current key/attempt, we're still waiting.
-  const [result, setResult] = useState({ key: undefined, attempt: -1, data: undefined, error: null })
+  const [result, setResult] = useState({
+    key: undefined,
+    attempt: -1,
+    data: undefined,
+    error: null,
+  })
 
   // Always calls the latest `load`, without making it an effect dependency.
   const runLoad = useEffectEvent(() => load())

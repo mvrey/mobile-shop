@@ -5,6 +5,13 @@ import { productName } from '../domain/product'
 const WIDTH = 160
 const HEIGHT = 212
 
+/**
+ * @param {{
+ *   product: import('../domain/product').ProductSummary,
+ *   className?: string,
+ *   loading?: 'lazy' | 'eager',
+ * }} props
+ */
 function ProductImage({ product, className, loading }) {
   return (
     <img

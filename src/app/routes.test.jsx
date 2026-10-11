@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { getProducts } from '../features/catalog/api/catalogApi'
 import { renderApp } from '../test/renderApp'
 
 // The pages fetch data; this suite only cares about routing. Products load as an
@@ -53,5 +54,18 @@ describe('routing and header', () => {
     renderApp('/')
 
     expect(screen.getByRole('status', { name: '3 items in cart' })).toBeInTheDocument()
+  })
+
+  it('replaces the page with an error screen if rendering throws, and logs the error', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.mocked(getProducts).mockResolvedValueOnce([null]) // a card can't render null
+    renderApp('/')
+
+    expect(
+      await screen.findByRole('heading', { name: /something went wrong/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to products/i })).toHaveAttribute('href', '/')
+    expect(consoleError).toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 })

@@ -3,6 +3,7 @@ import { NO_PRICE_LABEL, formatPrice } from '../domain/formatPrice'
 import ProductImage from './ProductImage'
 import styles from './ProductCard.module.css'
 
+/** @param {{ product: import('../domain/product').ProductSummary }} props */
 function ProductCard({ product }) {
   const { id, brand, model, price } = product
   const formattedPrice = formatPrice(price)
