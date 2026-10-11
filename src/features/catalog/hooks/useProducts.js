@@ -1,6 +1,6 @@
 import { useRequest } from '../../../shared/hooks/useRequest'
-import { getProducts } from '../api/catalogApi'
+import { getProducts, peekProducts } from '../api/catalogApi'
 
 export function useProducts() {
-  return useRequest('products', getProducts)
+  return useRequest('products', getProducts, { peek: peekProducts })
 }

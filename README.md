@@ -110,6 +110,9 @@ src/
 - **Search state is in the URL** (`/?q=acer`). Going to a product and back, or reloading,
   keeps the search. Every word typed must appear in brand + model, in any order and ignoring
   case, so "z6 acer" finds "Acer Liquid Z6".
+- **Going back keeps your place.** "Back to products" goes back in history (like the browser's
+  back button) when you came from the list, and cached data renders on the first paint, so
+  the list returns at the same scroll position and with the same search.
 - **Selectors are native radio buttons** styled as pills, so keyboard navigation and screen
   readers work without extra code. A selector with a single option is preselected, as the
   spec requires; "Add to cart" stays disabled until both are chosen.

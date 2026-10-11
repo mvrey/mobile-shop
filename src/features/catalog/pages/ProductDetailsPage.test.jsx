@@ -179,5 +179,16 @@ describe('ProductDetailsPage', () => {
 
     expect(router.state.location.pathname).toBe('/')
     expect(router.state.location.search).toBe('?q=talk')
+    // A history "back" (POP), so the list's scroll position is restored.
+    expect(router.state.historyAction).toBe('POP')
+  })
+
+  it('opens the product list when the page was reached directly', async () => {
+    const { router } = renderApp(path)
+
+    await userEvent.click(await screen.findByRole('link', { name: /back to products/i }))
+
+    expect(router.state.location.pathname).toBe('/')
+    expect(router.state.historyAction).toBe('PUSH')
   })
 })

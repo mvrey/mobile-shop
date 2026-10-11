@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { Link, useLocation, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import ErrorState from '../../../shared/ui/ErrorState'
 import LoadingState from '../../../shared/ui/LoadingState'
 import { ProductNotFoundError } from '../api/catalogApi'
@@ -17,9 +17,17 @@ function ProductDetailsPage({ renderActions }) {
   const { data: product, error, loading, retry } = useProduct(id)
   const titleId = useId()
 
-  // The product list passes its URL (with the search) so "Back" restores it.
+  // Coming from the product list, it passes its URL (with the search). Then "Back"
+  // goes back in history, like the browser's back button, so the list comes back
+  // where it was scrolled to. Arriving any other way (a shared link), it opens the list.
   const location = useLocation()
-  const backTo = location.state?.from ?? '/'
+  const navigate = useNavigate()
+  const cameFromList = location.state?.from != null
+  const handleBack = (event) => {
+    if (!cameFromList) return
+    event.preventDefault()
+    navigate(-1)
+  }
 
   const notFound = error instanceof ProductNotFoundError
   const title = product ? productName(product) : notFound ? 'Product not found' : 'Product'
@@ -27,7 +35,7 @@ function ProductDetailsPage({ renderActions }) {
   return (
     <article>
       <title>{`${title} | Mobile Shop`}</title>
-      <Link to={backTo} className={styles.back}>
+      <Link to={location.state?.from ?? '/'} onClick={handleBack} className={styles.back}>
         ← Back to products
       </Link>
 

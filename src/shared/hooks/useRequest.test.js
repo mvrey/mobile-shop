@@ -54,6 +54,22 @@ describe('useRequest', () => {
     expect(result.current.data).toBe('B')
   })
 
+  it('shows data it can peek at right away, without a loading state', () => {
+    const { result } = renderHook(() =>
+      useRequest('key', () => new Promise(() => {}), { peek: () => 'cached' }),
+    )
+
+    expect(result.current).toMatchObject({ loading: false, data: 'cached', error: null })
+  })
+
+  it('loads normally when there is nothing to peek at', () => {
+    const { result } = renderHook(() =>
+      useRequest('key', () => new Promise(() => {}), { peek: () => undefined }),
+    )
+
+    expect(result.current.loading).toBe(true)
+  })
+
   it('does not reload when only the load function changes', () => {
     const load = vi.fn(() => new Promise(() => {}))
     const { rerender } = renderHook(() => useRequest('key', () => load()))

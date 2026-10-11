@@ -22,6 +22,21 @@ export function createCatalogApi({ cache, fetchJson }) {
   const cached = createCachedFetcher({ cache })
   const cacheKey = (path) => API_BASE_URL + path
   const cachedGet = (path) => cached(cacheKey(path), () => fetchJson(path))
+  const productPath = (id) => `${LIST_PATH}/${encodeURIComponent(id)}`
+
+  // Synchronous cache reads: the data if it is cached and fresh, else undefined.
+  // These run during render, so they never throw: an unusable entry is a miss,
+  // and the normal (async) load then reports the problem.
+  function peek(path, toModel) {
+    try {
+      const value = cache.get(cacheKey(path))
+      return value === undefined ? undefined : toModel(value)
+    } catch {
+      return undefined
+    }
+  }
+  const peekProducts = () => peek(LIST_PATH, toProductSummaries)
+  const peekProduct = (id) => peek(productPath(id), toProduct)
 
   /** @returns {Promise<import('../domain/product').ProductSummary[]>} */
   function getProducts() {
@@ -31,7 +46,7 @@ export function createCatalogApi({ cache, fetchJson }) {
   /** @returns {Promise<import('../domain/product').Product>} */
   async function getProduct(id) {
     try {
-      return toProduct(await cachedGet(`${LIST_PATH}/${encodeURIComponent(id)}`))
+      return toProduct(await cachedGet(productPath(id)))
     } catch (error) {
       if (error instanceof ApiError && (await isMissingFromCatalog(id))) {
         throw new ProductNotFoundError(id)
@@ -58,11 +73,11 @@ export function createCatalogApi({ cache, fetchJson }) {
     }
   }
 
-  return { getProducts, getProduct }
+  return { getProducts, getProduct, peekProducts, peekProduct }
 }
 
 // The app's instance: responses cached in localStorage for 1 hour.
-export const { getProducts, getProduct } = createCatalogApi({
+export const { getProducts, getProduct, peekProducts, peekProduct } = createCatalogApi({
   cache: createStorageCache(),
   fetchJson: request,
 })

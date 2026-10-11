@@ -147,6 +147,27 @@ describe('catalogApi', () => {
       expect((await api.getProducts()).map((product) => product.id)).toEqual(['old', 'new'])
     })
 
+    it('peeks at cached data synchronously, mapped to the domain model', async () => {
+      const fetchJson = vi.fn(() => Promise.resolve([listItem('a')]))
+      const api = createCatalogApi({ cache: memoryCache(), fetchJson })
+
+      expect(api.peekProducts()).toBeUndefined()
+      await api.getProducts()
+
+      expect(api.peekProducts()).toEqual([
+        { id: 'a', brand: 'Acer', model: 'a', price: 100, imageUrl: '/a.jpg' },
+      ])
+      expect(api.peekProduct('a')).toBeUndefined()
+    })
+
+    it('treats an unusable cached entry as a miss when peeking', () => {
+      const cache = memoryCache()
+      cache.set(`${API_BASE_URL}/api/product`, { not: 'a list' })
+      const api = createCatalogApi({ cache, fetchJson: vi.fn() })
+
+      expect(api.peekProducts()).toBeUndefined()
+    })
+
     it('does not fetch the list twice when it was not cached yet', async () => {
       const fetchJson = vi.fn((path) =>
         path === '/api/product'

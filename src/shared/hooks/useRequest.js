@@ -4,8 +4,13 @@ import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 // being loaded: a new key starts a new request; a new `load` function alone does
 // not (so callers can pass an inline arrow function).
 //
+// `peek`, if given, returns the data synchronously when it is already at hand
+// (e.g. cached), or undefined. Then the data shows on the very first render,
+// with no loading state; that matters for scroll restoration, which needs the
+// page at full height as soon as it renders.
+//
 // Returns { data, error, loading, retry }.
-export function useRequest(key, load) {
+export function useRequest(key, load, { peek } = {}) {
   const [attempt, setAttempt] = useState(0)
   // The result remembers which request produced it, so `loading` can be derived:
   // if the stored result is not for the current key/attempt, we're still waiting.
@@ -38,6 +43,10 @@ export function useRequest(key, load) {
   const retry = useCallback(() => setAttempt((n) => n + 1), [])
 
   const isCurrent = result.key === key && result.attempt === attempt
+  if (!isCurrent) {
+    const peeked = peek?.()
+    if (peeked !== undefined) return { data: peeked, error: null, loading: false, retry }
+  }
   return {
     data: isCurrent ? result.data : undefined,
     error: isCurrent ? result.error : null,
