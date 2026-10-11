@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderApp } from '../../../test/renderApp'
 import { getProducts } from '../api/catalogApi'
 
-vi.mock('../api/catalogApi', () => ({ getProducts: vi.fn() }))
+vi.mock('../api/catalogApi', async (importOriginal) => ({
+  ...(await importOriginal()),
+  getProducts: vi.fn(),
+}))
 
 const products = [
   { id: 'z6', brand: 'Acer', model: 'Liquid Z6', price: 120, imageUrl: '/z6.jpg' },
@@ -38,7 +41,7 @@ describe('ProductListPage', () => {
     const card = await screen.findByRole('link', { name: /liquid z6/i })
     expect(within(card).getByRole('img', { name: 'Acer Liquid Z6' })).toHaveAttribute('src', '/z6.jpg')
     expect(within(card).getByText('Acer')).toBeInTheDocument()
-    expect(within(card).getByText(/^120\s€$/)).toBeInTheDocument()
+    expect(within(card).getByText('€120')).toBeInTheDocument()
     expect(card).toHaveAttribute('href', '/product/z6')
   })
 

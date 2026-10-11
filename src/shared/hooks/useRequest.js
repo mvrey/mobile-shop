@@ -1,35 +1,38 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 
-// Runs an async `load` function and tracks its result.
-// `load` must be stable between renders (a module function, or wrapped in
-// useCallback): a new `load` means "fetch something else" and starts a new request.
+// Runs the async `load` function and tracks its result. `key` identifies what is
+// being loaded: a new key starts a new request; a new `load` function alone does
+// not (so callers can pass an inline arrow function).
 //
 // Returns { data, error, loading, retry }.
-export function useRequest(load) {
+export function useRequest(key, load) {
   const [attempt, setAttempt] = useState(0)
   // The result remembers which request produced it, so `loading` can be derived:
-  // if the stored result is not for the current load/attempt, we're still waiting.
-  const [result, setResult] = useState({ load: null, attempt: -1, data: undefined, error: null })
+  // if the stored result is not for the current key/attempt, we're still waiting.
+  const [result, setResult] = useState({ key: undefined, attempt: -1, data: undefined, error: null })
+
+  // Always calls the latest `load`, without making it an effect dependency.
+  const runLoad = useEffectEvent(() => load())
 
   useEffect(() => {
     let active = true
-    load().then(
+    runLoad().then(
       (data) => {
-        if (active) setResult({ load, attempt, data, error: null })
+        if (active) setResult({ key, attempt, data, error: null })
       },
       (error) => {
-        if (active) setResult({ load, attempt, data: undefined, error })
+        if (active) setResult({ key, attempt, data: undefined, error })
       },
     )
     // Ignore the answer if the component unmounted or a newer request started.
     return () => {
       active = false
     }
-  }, [load, attempt])
+  }, [key, attempt])
 
   const retry = useCallback(() => setAttempt((n) => n + 1), [])
 
-  const isCurrent = result.load === load && result.attempt === attempt
+  const isCurrent = result.key === key && result.attempt === attempt
   return {
     data: isCurrent ? result.data : undefined,
     error: isCurrent ? result.error : null,

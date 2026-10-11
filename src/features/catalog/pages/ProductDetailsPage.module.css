@@ -76,15 +76,9 @@
 }
 
 .title {
-  margin: 2px 0 4px;
+  margin: 2px 0 20px;
   font-size: clamp(1.25rem, 5vw, 1.75rem);
   line-height: 1.2;
-}
-
-.price {
-  margin: 0 0 20px;
-  font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .sectionTitle {

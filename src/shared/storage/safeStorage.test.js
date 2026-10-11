@@ -16,6 +16,13 @@ describe('safeStorage', () => {
     expect(safeStorage.get('greeting')).toBeNull()
   })
 
+  it('lists only the keys the app stored', () => {
+    safeStorage.set('a', '1')
+    localStorage.setItem('other-app', 'x')
+
+    expect(safeStorage.keys()).toEqual(['a'])
+  })
+
   it('never throws when storage is unavailable', () => {
     for (const method of ['getItem', 'setItem', 'removeItem']) {
       vi.spyOn(Storage.prototype, method).mockImplementation(() => {

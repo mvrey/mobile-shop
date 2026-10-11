@@ -45,6 +45,12 @@ function toOptions(options) {
   return Array.isArray(options) ? options : []
 }
 
+// The name shown to users, e.g. "Acer Iconia Talk S".
+/** @param {ProductSummary} product */
+export function productName(product) {
+  return `${product.brand} ${product.model}`.trim()
+}
+
 /** @returns {ProductSummary} */
 export function toProductSummary(dto) {
   return {

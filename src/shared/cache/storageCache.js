@@ -12,26 +12,35 @@ export function createStorageCache({
   ttlMs = CACHE_TTL_MS,
   now = () => Date.now(),
 } = {}) {
-  const storageKey = (key) => `${namespace}:${key}`
+  const prefix = `${namespace}:`
+  const storageKey = (key) => prefix + key
 
-  return {
-    // Returns the cached value, or undefined if missing, expired or corrupt.
-    get(key) {
-      const raw = storage.get(storageKey(key))
-      if (!raw) return undefined
+  // Returns the cached value, or undefined if missing, expired or corrupt.
+  function get(key) {
+    const raw = storage.get(storageKey(key))
+    if (!raw) return undefined
 
-      try {
-        const { value, expiresAt } = JSON.parse(raw)
-        if (now() < expiresAt) return value
-      } catch {
-        // Corrupt entry: treat it as a miss and drop it below.
-      }
-      storage.remove(storageKey(key))
-      return undefined
-    },
-
-    set(key, value) {
-      storage.set(storageKey(key), JSON.stringify({ value, expiresAt: now() + ttlMs }))
-    },
+    try {
+      const { value, expiresAt } = JSON.parse(raw)
+      if (now() < expiresAt) return value
+    } catch {
+      // Corrupt entry: treat it as a miss and drop it below.
+    }
+    storage.remove(storageKey(key))
+    return undefined
   }
+
+  function set(key, value) {
+    storage.set(storageKey(key), JSON.stringify({ value, expiresAt: now() + ttlMs }))
+  }
+
+  // Drops every expired or corrupt entry. `get` only cleans up the keys it is
+  // asked for, so entries for pages never visited again would otherwise stay.
+  function prune() {
+    for (const key of storage.keys()) {
+      if (key.startsWith(prefix)) get(key.slice(prefix.length))
+    }
+  }
+
+  return { get, set, prune }
 }

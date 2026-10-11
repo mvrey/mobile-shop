@@ -5,7 +5,8 @@ import { renderApp } from '../test/renderApp'
 
 // The pages fetch data; this suite only cares about routing. Products load as an
 // empty list, and a product never finishes loading (so its page stays in "loading").
-vi.mock('../features/catalog/api/catalogApi', () => ({
+vi.mock('../features/catalog/api/catalogApi', async (importOriginal) => ({
+  ...(await importOriginal()),
   getProducts: vi.fn(() => Promise.resolve([])),
   getProduct: vi.fn(() => new Promise(() => {})),
 }))

@@ -4,9 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { iconiaTalkSProduct as iconiaTalkS, iconiaTalkSSummary } from '../../../test/fixtures'
 import { renderApp } from '../../../test/renderApp'
 import { addToCart } from '../../cart/api/cartApi'
-import { getProduct, getProducts } from '../api/catalogApi'
+import { ProductNotFoundError, getProduct, getProducts } from '../api/catalogApi'
 
-vi.mock('../api/catalogApi', () => ({ getProducts: vi.fn(), getProduct: vi.fn() }))
+// Keep the real module (e.g. its error classes); replace only the API calls.
+vi.mock('../api/catalogApi', async (importOriginal) => ({
+  ...(await importOriginal()),
+  getProducts: vi.fn(),
+  getProduct: vi.fn(),
+}))
 vi.mock('../../cart/api/cartApi', () => ({ addToCart: vi.fn() }))
 
 const path = `/product/${iconiaTalkS.id}`
@@ -136,6 +141,17 @@ describe('ProductDetailsPage', () => {
 
     await userEvent.click(within(alert).getByRole('button', { name: /try again/i }))
     expect(await screen.findByRole('heading', { level: 1, name: 'Iconia Talk S' })).toBeInTheDocument()
+  })
+
+  it('says when the product does not exist, without offering a retry', async () => {
+    getProduct.mockRejectedValue(new ProductNotFoundError('nope'))
+    renderApp('/product/nope')
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(/doesn't exist/i)
+    expect(within(alert).queryByRole('button')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to products/i })).toBeInTheDocument()
+    expect(document.title).toBe('Product not found | Mobile Shop')
   })
 
   it('links back to the product list, keeping the search', async () => {

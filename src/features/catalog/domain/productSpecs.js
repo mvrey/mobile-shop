@@ -1,4 +1,4 @@
-import { formatPrice } from './formatPrice'
+import { NO_PRICE_LABEL, formatPrice } from './formatPrice'
 
 // Builds the list of { label, value } rows shown in the product description,
 // skipping attributes the API left empty.
@@ -6,7 +6,7 @@ export function productSpecs(product) {
   const rows = [
     { label: 'Brand', value: product.brand },
     { label: 'Model', value: product.model },
-    { label: 'Price', value: formatPrice(product.price) ?? 'Not available' },
+    { label: 'Price', value: formatPrice(product.price) ?? NO_PRICE_LABEL },
     { label: 'CPU', value: product.cpu },
     { label: 'RAM', value: product.ram },
     { label: 'Operating system', value: product.os },

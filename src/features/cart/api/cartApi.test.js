@@ -24,11 +24,14 @@ describe('cartApi.addToCart', () => {
     fetchMock.mockReturnValue(jsonResponse({ count: 1 }))
 
     await expect(addToCart(selection)).resolves.toEqual({ count: 1 })
-    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/cart`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(selection),
-    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/cart`,
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(selection),
+      }),
+    )
   })
 
   it('is never cached', async () => {

@@ -131,8 +131,13 @@ Base URL: `https://itx-frontend-test.onrender.com/` (override with `VITE_API_BAS
 
 `GET` responses are stored in `localStorage` with a 1-hour expiry
 (`src/shared/cache/storageCache.js`), so they survive page reloads. Once an entry is older
-than an hour it is discarded and fetched again. If the browser blocks storage (private mode, quota exceeded), the app keeps working
+than an hour it is discarded and fetched again; expired entries are also swept on startup.
+Entries are keyed by full URL, so switching `VITE_API_BASE_URL` never serves another API's
+data. If the browser blocks storage (private mode, quota exceeded), the app keeps working
 without the cache. `POST /api/cart` is never cached.
+
+Requests give up after 90 seconds (longer than the API's wake-up time) and show the error
+state with a retry button.
 
 ### Notes on the API
 
@@ -145,6 +150,8 @@ without the cache. `POST /api/cart` is never cached.
   labels each by what it actually contains.
 - **Mixed field types:** some attributes (cameras, OS) come as a string for some products and
   as an array for others. Both are normalised to readable text, and empty values are hidden.
-- **Prices:** sent as strings, and empty for some products ("Price not available").
-- **Unknown product IDs:** the API answers `500` rather than `404`, so the details page shows
-  a generic error with a retry button and a link back to the list.
+- **Prices:** sent as strings, and empty for some products ("Price not available"). They are
+  shown in euros, formatted for an English-language UI: "€170", "€99.50".
+- **Unknown product IDs:** the API answers `500` rather than `404`. When a product fails to
+  load, the app checks the (usually cached) product list: if the id isn't there, the page says
+  the product doesn't exist; otherwise it shows a generic error with a retry button.

@@ -17,7 +17,7 @@ describe('productSpecs', () => {
     expect(asObject(productSpecs(product))).toEqual({
       Brand: 'Acer',
       Model: 'Iconia Talk S',
-      Price: expect.stringMatching(/^170\s€$/),
+      Price: '€170',
       CPU: 'Quad-core 1.3 GHz Cortex-A53',
       RAM: '2 GB RAM',
       'Operating system': 'Android 6.0 (Marshmallow)',
@@ -32,7 +32,7 @@ describe('productSpecs', () => {
   })
 
   it('says when the price is missing', () => {
-    expect(asObject(productSpecs({ ...product, price: null })).Price).toBe('Not available')
+    expect(asObject(productSpecs({ ...product, price: null })).Price).toBe('Price not available')
   })
 
   it('skips attributes the API left empty', () => {

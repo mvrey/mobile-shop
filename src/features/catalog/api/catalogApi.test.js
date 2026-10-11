@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { API_BASE_URL, ApiError } from '../../../shared/api/httpClient'
 import { CACHE_TTL_MS } from '../../../shared/cache/storageCache'
 import { iconiaTalkS } from '../../../test/fixtures'
-import { getProduct, getProducts } from './catalogApi'
+import { ProductNotFoundError, getProduct, getProducts } from './catalogApi'
 
 function jsonResponse(body, status = 200) {
   return Promise.resolve(
@@ -36,8 +36,19 @@ describe('catalogApi', () => {
       await expect(getProducts()).resolves.toEqual([
         { id: 'a', brand: 'Acer', model: 'a', price: 100, imageUrl: '/a.jpg' },
       ])
+      const [url, options] = fetchMock.mock.calls[0]
+      expect(url).toBe(`${API_BASE_URL}/api/product`)
       // A plain GET with no custom headers, so the browser sends no CORS preflight.
-      expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/product`, undefined)
+      expect(options.headers).toBeUndefined()
+      expect(options.method).toBeUndefined()
+    })
+
+    it('caches under the full URL, so another API never gets this data', async () => {
+      fetchMock.mockReturnValue(jsonResponse([listItem('a')]))
+
+      await getProducts()
+
+      expect(localStorage.getItem(`mobile-shop:cache:${API_BASE_URL}/api/product`)).not.toBeNull()
     })
 
     it('serves repeated calls from the cache', async () => {
@@ -84,7 +95,32 @@ describe('catalogApi', () => {
       await getProduct('a')
 
       expect(fetchMock).toHaveBeenCalledTimes(2)
-      expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/product/a`, undefined)
+      expect(fetchMock.mock.calls[0][0]).toBe(`${API_BASE_URL}/api/product/a`)
+    })
+
+    // The API answers 500 for an unknown id; the product list tells the two cases apart.
+    it('reports a product that is not in the catalog as not found', async () => {
+      fetchMock.mockImplementation((url) =>
+        url.endsWith('/api/product') ? jsonResponse([listItem('a')]) : jsonResponse({}, 500),
+      )
+
+      await expect(getProduct('missing')).rejects.toBeInstanceOf(ProductNotFoundError)
+    })
+
+    it('keeps the server error when the product is in the catalog', async () => {
+      fetchMock.mockImplementation((url) =>
+        url.endsWith('/api/product') ? jsonResponse([listItem('a')]) : jsonResponse({}, 500),
+      )
+
+      const error = await getProduct('a').catch((e) => e)
+      expect(error).toBeInstanceOf(ApiError)
+      expect(error.status).toBe(500)
+    })
+
+    it('keeps the server error when the catalog cannot be checked', async () => {
+      fetchMock.mockImplementation(() => jsonResponse({}, 500))
+
+      await expect(getProduct('a')).rejects.toBeInstanceOf(ApiError)
     })
   })
 })

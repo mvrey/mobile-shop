@@ -58,12 +58,28 @@ describe('storageCache', () => {
     expect(cache.get('products')).toBeUndefined()
   })
 
+  it('prunes expired and corrupt entries, keeping fresh ones and other app data', () => {
+    cache.set('old', 1)
+    vi.advanceTimersByTime(CACHE_TTL_MS)
+    cache.set('fresh', 2)
+    localStorage.setItem('mobile-shop:cache:corrupt', '{not json')
+    localStorage.setItem('mobile-shop:cart-count', '3')
+
+    cache.prune()
+
+    expect(Object.keys(localStorage).sort()).toEqual([
+      'mobile-shop:cache:fresh',
+      'mobile-shop:cart-count',
+    ])
+  })
+
   it('works with any storage, TTL and clock', () => {
     const entries = new Map()
     const storage = {
       get: (key) => entries.get(key) ?? null,
       set: (key, value) => entries.set(key, value),
       remove: (key) => entries.delete(key),
+      keys: () => [...entries.keys()],
     }
     let time = 0
     const memoryCache = createStorageCache({ storage, ttlMs: 10, now: () => time })
