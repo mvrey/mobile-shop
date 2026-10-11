@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigationType, useSearchParams } from 'react-router'
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import ErrorState from '../../../shared/ui/ErrorState'
 import LoadingState from '../../../shared/ui/LoadingState'
 import ProductCard from '../components/ProductCard'
@@ -7,6 +8,8 @@ import SearchBar from '../components/SearchBar'
 import { useProducts } from '../hooks/useProducts'
 import { filterProducts } from '../domain/filterProducts'
 import styles from './ProductListPage.module.css'
+
+const ANNOUNCE_DELAY_MS = 600
 
 function ProductListPage() {
   const { data: products, error, loading, retry } = useProducts()
@@ -38,6 +41,12 @@ function ProductListPage() {
     [products, query],
   )
 
+  // Screen readers hear the result count once typing pauses, not on every keystroke.
+  const resultsSummary = products
+    ? `Showing ${visibleProducts.length} of ${products.length} products.`
+    : ''
+  const announcedSummary = useDebouncedValue(resultsSummary, ANNOUNCE_DELAY_MS)
+
   return (
     <section>
       <title>Products | Mobile Shop</title>
@@ -45,10 +54,13 @@ function ProductListPage() {
         <div>
           <h1 className={styles.title}>Products</h1>
           {products && (
-            <p className={styles.count} aria-live="polite">
+            <p className={styles.count}>
               {visibleProducts.length} of {products.length} products
             </p>
           )}
+          <p className="visually-hidden" aria-live="polite">
+            {announcedSummary}
+          </p>
         </div>
         <SearchBar value={query} onChange={handleQueryChange} />
       </div>

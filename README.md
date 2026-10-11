@@ -100,6 +100,9 @@ src/
 - **The cart owns its operation.** `CartProvider` exposes `addToCart(selection)`, which calls
   the API and updates the count; the actions form only collects the selection and reports the
   outcome. The API call is injected, so tests can replace it.
+- **Features don't import each other.** The details page (catalog) renders the purchase form
+  (cart) through a `renderActions` slot that `app/routes.jsx` fills in, so the composition
+  happens in the app shell.
 - **Caching lives in the API layer**, not in components. `getProducts()` and `getProduct(id)`
   return cached data when it is fresh and only hit the network otherwise. Concurrent requests
   for the same data share one network call (React StrictMode runs effects twice in
@@ -124,7 +127,7 @@ src/
 npm test
 ```
 
-94 tests (over 99% line coverage, `npm run test:coverage`): unit tests for the HTTP client,
+105 tests (over 99% line coverage, `npm run test:coverage`): unit tests for the HTTP client,
 cache, storage, domain mappers and helpers, hooks and shared components, plus full-page tests.
 Page tests render the whole app (router, header, providers) at a given URL and only replace
 the API calls, so they exercise real routing, hooks and components the way a user would:
@@ -167,5 +170,6 @@ state with a retry button.
 - **Prices:** sent as strings, and empty for some products ("Price not available"). They are
   shown in euros, formatted for an English-language UI: "€170", "€99.50".
 - **Unknown product IDs:** the API answers `500` rather than `404`. When a product fails to
-  load, the app checks the (usually cached) product list: if the id isn't there, the page says
-  the product doesn't exist; otherwise it shows a generic error with a retry button.
+  load, the app checks the (usually cached) product list, and a fresh copy if the cached one
+  could be outdated: if the id isn't there, the page says the product doesn't exist;
+  otherwise it shows a generic error with a retry button.

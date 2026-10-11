@@ -12,41 +12,57 @@ export class ProductNotFoundError extends Error {
   }
 }
 
-// Raw API responses are cached (for 1 hour); mapping to the domain model happens
-// on the way out, so a cached entry always has the API's shape. Entries are keyed
-// by full URL, so pointing the app at another API never serves the old one's data.
-const cache = createStorageCache()
-cache.prune()
-const cached = createCachedFetcher({ cache })
+const LIST_PATH = '/api/product'
 
-function cachedGet(path) {
-  return cached(API_BASE_URL + path, () => request(path))
-}
+// Builds the catalog API on top of a cache and an HTTP `fetchJson(path)`.
+// Raw API responses are cached; mapping to the domain model happens on the way
+// out, so a cached entry always has the API's shape. Entries are keyed by full
+// URL, so pointing the app at another API never serves the old one's data.
+export function createCatalogApi({ cache, fetchJson }) {
+  const cached = createCachedFetcher({ cache })
+  const cacheKey = (path) => API_BASE_URL + path
+  const cachedGet = (path) => cached(cacheKey(path), () => fetchJson(path))
 
-/** @returns {Promise<import('../domain/product').ProductSummary[]>} */
-export function getProducts() {
-  return cachedGet('/api/product').then(toProductSummaries)
-}
+  /** @returns {Promise<import('../domain/product').ProductSummary[]>} */
+  function getProducts() {
+    return cachedGet(LIST_PATH).then(toProductSummaries)
+  }
 
-/** @returns {Promise<import('../domain/product').Product>} */
-export async function getProduct(id) {
-  try {
-    return toProduct(await cachedGet(`/api/product/${encodeURIComponent(id)}`))
-  } catch (error) {
-    if (error instanceof ApiError && (await isMissingFromCatalog(id))) {
-      throw new ProductNotFoundError(id)
+  /** @returns {Promise<import('../domain/product').Product>} */
+  async function getProduct(id) {
+    try {
+      return toProduct(await cachedGet(`${LIST_PATH}/${encodeURIComponent(id)}`))
+    } catch (error) {
+      if (error instanceof ApiError && (await isMissingFromCatalog(id))) {
+        throw new ProductNotFoundError(id)
+      }
+      throw error
     }
-    throw error
   }
+
+  // The API can't tell "no such product" from a server error, so ask the product
+  // list. A cached list may be older than the product, so before concluding it's
+  // missing, check a fresh copy. If the list can't be loaded, we don't know.
+  async function isMissingFromCatalog(id) {
+    const listed = (products) => products.some((product) => product.id === id)
+    try {
+      const wasCached = cache.get(cacheKey(LIST_PATH)) !== undefined
+      if (listed(await getProducts())) return false
+      if (!wasCached) return true
+
+      const fresh = await fetchJson(LIST_PATH)
+      cache.set(cacheKey(LIST_PATH), fresh)
+      return !listed(toProductSummaries(fresh))
+    } catch {
+      return false
+    }
+  }
+
+  return { getProducts, getProduct }
 }
 
-// The API can't tell "no such product" from a server error, so ask the product
-// list (usually already cached). If the list can't be loaded either, we don't know.
-async function isMissingFromCatalog(id) {
-  try {
-    const products = await getProducts()
-    return !products.some((product) => product.id === id)
-  } catch {
-    return false
-  }
-}
+// The app's instance: responses cached in localStorage for 1 hour.
+export const { getProducts, getProduct } = createCatalogApi({
+  cache: createStorageCache(),
+  fetchJson: request,
+})

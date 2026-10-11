@@ -70,6 +70,16 @@ describe('ProductListPage', () => {
     expect(router.state.location.search).toBe('?q=acer+z6')
   })
 
+  it('announces the result count to screen readers once typing pauses', async () => {
+    getProducts.mockResolvedValue(products)
+    renderApp('/')
+    const search = await screen.findByRole('searchbox')
+
+    await userEvent.type(search, 'idol')
+
+    expect(await screen.findByText('Showing 1 of 3 products.')).toBeInTheDocument()
+  })
+
   it('restores the search from the URL', async () => {
     getProducts.mockResolvedValue(products)
     renderApp('/?q=idol')

@@ -2,7 +2,6 @@ import { useId } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import ErrorState from '../../../shared/ui/ErrorState'
 import LoadingState from '../../../shared/ui/LoadingState'
-import ProductActions from '../../cart/components/ProductActions'
 import { ProductNotFoundError } from '../api/catalogApi'
 import ProductImage from '../components/ProductImage'
 import { productName } from '../domain/product'
@@ -10,7 +9,10 @@ import { productSpecs } from '../domain/productSpecs'
 import { useProduct } from '../hooks/useProduct'
 import styles from './ProductDetailsPage.module.css'
 
-function ProductDetailsPage() {
+// `renderActions(product)` renders the purchase form (the ACTIONS panel). The app
+// supplies it, so the catalog doesn't depend on the cart.
+/** @param {{ renderActions?: (product: import('../domain/product').Product) => import('react').ReactNode }} props */
+function ProductDetailsPage({ renderActions }) {
   const { id } = useParams()
   const { data: product, error, loading, retry } = useProduct(id)
   const titleId = useId()
@@ -60,10 +62,7 @@ function ProductDetailsPage() {
               </dl>
             </section>
 
-            <section className={styles.panel}>
-              {/* key: a different product starts with fresh selections */}
-              <ProductActions key={product.id} product={product} />
-            </section>
+            {renderActions && <section className={styles.panel}>{renderActions(product)}</section>}
           </div>
         </div>
       )}

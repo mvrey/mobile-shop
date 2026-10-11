@@ -124,6 +124,15 @@ describe('ProductDetailsPage', () => {
     expect(await screen.findByRole('button', { name: /add to cart/i })).toBeEnabled()
   })
 
+  it('says when a product cannot be bought because it has no options', async () => {
+    getProduct.mockResolvedValue({ ...iconiaTalkS, options: { colors: [], storages: [] } })
+    renderApp(path)
+
+    expect(await screen.findByText(/currently unavailable/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /add to cart/i })).toBeDisabled()
+    expect(screen.queryByText(/choose a storage/i)).not.toBeInTheDocument()
+  })
+
   it('reports a failed add and leaves the count unchanged', async () => {
     addToCart.mockRejectedValue(new Error('network down'))
     renderApp(path)

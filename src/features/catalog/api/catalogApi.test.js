@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { API_BASE_URL, ApiError } from '../../../shared/api/httpClient'
 import { CACHE_TTL_MS } from '../../../shared/cache/storageCache'
 import { iconiaTalkS } from '../../../test/fixtures'
-import { ProductNotFoundError, getProduct, getProducts } from './catalogApi'
+import { ProductNotFoundError, createCatalogApi, getProduct, getProducts } from './catalogApi'
 
 function jsonResponse(body, status = 200) {
   return Promise.resolve(
@@ -121,6 +121,42 @@ describe('catalogApi', () => {
       fetchMock.mockImplementation(() => jsonResponse({}, 500))
 
       await expect(getProduct('a')).rejects.toBeInstanceOf(ApiError)
+    })
+  })
+
+  // Built with an in-memory cache and a fake HTTP call: no fetch, no localStorage.
+  describe('createCatalogApi', () => {
+    function memoryCache() {
+      const entries = new Map()
+      return { get: (key) => entries.get(key), set: (key, value) => entries.set(key, value) }
+    }
+
+    it('checks a fresh product list before saying a product does not exist', async () => {
+      const lists = [[listItem('old')], [listItem('old'), listItem('new')]]
+      const fetchJson = vi.fn((path) =>
+        path === '/api/product'
+          ? Promise.resolve(lists.shift())
+          : Promise.reject(new ApiError('boom', 500)),
+      )
+      const api = createCatalogApi({ cache: memoryCache(), fetchJson })
+      await api.getProducts() // caches the list from before 'new' existed
+
+      const error = await api.getProduct('new').catch((e) => e)
+
+      expect(error).toBeInstanceOf(ApiError) // listed in the fresh list: a real server error
+      expect((await api.getProducts()).map((product) => product.id)).toEqual(['old', 'new'])
+    })
+
+    it('does not fetch the list twice when it was not cached yet', async () => {
+      const fetchJson = vi.fn((path) =>
+        path === '/api/product'
+          ? Promise.resolve([listItem('a')])
+          : Promise.reject(new ApiError('boom', 500)),
+      )
+      const api = createCatalogApi({ cache: memoryCache(), fetchJson })
+
+      await expect(api.getProduct('missing')).rejects.toBeInstanceOf(ProductNotFoundError)
+      expect(fetchJson.mock.calls.filter(([path]) => path === '/api/product')).toHaveLength(1)
     })
   })
 })
