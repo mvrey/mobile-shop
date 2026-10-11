@@ -5,10 +5,12 @@ import { CartContext } from './CartContext'
 
 const STORAGE_KEY = 'cart-count'
 
-function readStoredCount() {
-  const count = Number(safeStorage.get(STORAGE_KEY))
+function parseCount(value) {
+  const count = Number(value)
   return Number.isInteger(count) && count > 0 ? count : 0
 }
+
+const readStoredCount = () => parseCount(safeStorage.get(STORAGE_KEY))
 
 // Owns the cart: the number of items in it, and the "add to cart" operation.
 // The count is persisted, so the header shows it on every view and after a reload.
@@ -25,6 +27,10 @@ export function CartProvider({ children, request = addToCartRequest }) {
   useEffect(() => {
     safeStorage.set(STORAGE_KEY, String(count))
   }, [count])
+
+  // Follow adds made in other tabs, so each tab adds to the latest total instead
+  // of overwriting it with its own stale one.
+  useEffect(() => safeStorage.subscribe(STORAGE_KEY, (value) => setCount(parseCount(value))), [])
 
   const addToCart = useCallback(
     async (selection) => {

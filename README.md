@@ -112,7 +112,8 @@ src/
   spec requires; "Add to cart" stays disabled until both are chosen.
 - **Breadcrumbs are data-driven:** each route declares a `crumb` in its `handle`, and the
   product route renders the product's name once it has loaded.
-- **Loading, empty and error states everywhere**, with a "Try again" button on errors. Failed
+- **Loading, empty and error states everywhere**, with a "Try again" button on errors that a
+  retry can fix (not on "this product doesn't exist"). Failed
   responses are never cached, so retrying really refetches.
 - **Accessibility:** semantic landmarks and headings, labelled search and cart counter,
   visible focus styles, alt text on images, and page titles per view.

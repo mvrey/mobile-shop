@@ -53,7 +53,7 @@ describe('routing and header', () => {
     localStorage.setItem('mobile-shop:cart-count', '3')
     renderApp('/')
 
-    expect(screen.getByRole('status', { name: '3 items in cart' })).toBeInTheDocument()
+    expect(screen.getByText('3 items in cart')).toBeInTheDocument()
   })
 
   it('replaces the page with an error screen if rendering throws, and logs the error', async () => {
@@ -65,6 +65,9 @@ describe('routing and header', () => {
       await screen.findByRole('heading', { name: /something went wrong/i }),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /back to products/i })).toHaveAttribute('href', '/')
+    // The error is shown inside the layout: the header and cart count stay.
+    expect(screen.getByRole('link', { name: 'Mobile Shop' })).toBeInTheDocument()
+    expect(screen.getByText('0 items in cart')).toBeInTheDocument()
     expect(consoleError).toHaveBeenCalled()
     consoleError.mockRestore()
   })

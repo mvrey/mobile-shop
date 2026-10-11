@@ -23,6 +23,20 @@ describe('safeStorage', () => {
     expect(safeStorage.keys()).toEqual(['a'])
   })
 
+  it('notifies changes to a key made in another tab, until unsubscribed', () => {
+    const onChange = vi.fn()
+    const unsubscribe = safeStorage.subscribe('count', onChange)
+    const otherTabSets = (key, newValue) =>
+      window.dispatchEvent(new StorageEvent('storage', { key, newValue }))
+
+    otherTabSets('mobile-shop:count', '2')
+    otherTabSets('mobile-shop:other', '3')
+    unsubscribe()
+    otherTabSets('mobile-shop:count', '4')
+
+    expect(onChange.mock.calls).toEqual([['2']])
+  })
+
   it('never throws when storage is unavailable', () => {
     for (const method of ['getItem', 'setItem', 'removeItem']) {
       vi.spyOn(Storage.prototype, method).mockImplementation(() => {

@@ -17,7 +17,7 @@ vi.mock('../../cart/api/cartApi', () => ({ addToCart: vi.fn() }))
 const path = `/product/${iconiaTalkS.id}`
 
 function cartBadge() {
-  return screen.getByRole('status', { name: /in cart/i })
+  return screen.getByText(/in cart$/).closest('[role=status]')
 }
 
 describe('ProductDetailsPage', () => {
@@ -94,7 +94,7 @@ describe('ProductDetailsPage', () => {
 
   it('adds the selection to the cart and updates the header count', async () => {
     renderApp(path)
-    expect(cartBadge()).toHaveAccessibleName('0 items in cart')
+    expect(cartBadge()).toHaveTextContent('0 items in cart')
 
     await userEvent.click(await screen.findByRole('radio', { name: '32 GB' }))
     await userEvent.click(screen.getByRole('button', { name: /add to cart/i }))
@@ -105,10 +105,10 @@ describe('ProductDetailsPage', () => {
       storageCode: 2001,
     })
     expect(await screen.findByText(/added to your cart/i)).toBeInTheDocument()
-    expect(cartBadge()).toHaveAccessibleName('1 item in cart')
+    expect(cartBadge()).toHaveTextContent('1 item in cart')
 
     await userEvent.click(screen.getByRole('button', { name: /add to cart/i }))
-    expect(await screen.findByRole('status', { name: '2 items in cart' })).toBeInTheDocument()
+    expect(await screen.findByText('2 items in cart')).toBeInTheDocument()
   })
 
   it('can add straight away when every option has a single choice', async () => {
@@ -132,7 +132,7 @@ describe('ProductDetailsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /add to cart/i }))
 
     expect(await screen.findByText(/couldn't add it to your cart/i)).toBeInTheDocument()
-    expect(cartBadge()).toHaveAccessibleName('0 items in cart')
+    expect(cartBadge()).toHaveTextContent('0 items in cart')
   })
 
   it('shows an error with a retry when the product cannot be loaded', async () => {

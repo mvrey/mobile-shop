@@ -40,4 +40,14 @@ export const safeStorage = {
       // Storage unavailable: nothing to remove.
     }
   },
+
+  // Calls `onChange(newValue)` when another tab changes `key` (the browser fires
+  // a 'storage' event in every other tab of the same site). Returns an unsubscribe.
+  subscribe(key, onChange) {
+    const handleStorage = (event) => {
+      if (event.key === PREFIX + key) onChange(event.newValue)
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  },
 }

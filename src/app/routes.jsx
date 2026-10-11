@@ -10,16 +10,28 @@ export const routes = [
   {
     path: '/',
     element: <Layout />,
-    errorElement: <RouteErrorPage />,
+    // Last resort, only if the layout itself fails: there is no header to keep.
+    errorElement: (
+      <main>
+        <RouteErrorPage />
+      </main>
+    ),
     handle: { crumb: () => 'Products' },
     children: [
-      { index: true, element: <ProductListPage /> },
       {
-        path: 'product/:id',
-        element: <ProductDetailsPage />,
-        handle: { crumb: (match) => <ProductCrumb id={match.params.id} /> },
+        // A page that fails to render is replaced inside the layout, so the header
+        // (home link, breadcrumbs, cart count) stays on screen.
+        errorElement: <RouteErrorPage />,
+        children: [
+          { index: true, element: <ProductListPage /> },
+          {
+            path: 'product/:id',
+            element: <ProductDetailsPage />,
+            handle: { crumb: (match) => <ProductCrumb id={match.params.id} /> },
+          },
+          { path: '*', element: <NotFoundPage />, handle: { crumb: () => 'Not found' } },
+        ],
       },
-      { path: '*', element: <NotFoundPage />, handle: { crumb: () => 'Not found' } },
     ],
   },
 ]

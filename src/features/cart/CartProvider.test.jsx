@@ -51,6 +51,28 @@ describe('CartProvider', () => {
     expect(result.current.count).toBe(0)
   })
 
+  it('follows the count when another tab changes it', () => {
+    const { result } = renderCart()
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', { key: 'mobile-shop:cart-count', newValue: '7' }),
+      )
+    })
+
+    expect(result.current.count).toBe(7)
+  })
+
+  it('ignores storage changes to other keys', () => {
+    const { result } = renderCart()
+
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'something-else', newValue: '7' }))
+    })
+
+    expect(result.current.count).toBe(0)
+  })
+
   it('throws a clear error when used outside the provider', () => {
     expect(() => renderHook(() => useCart())).toThrow(/inside a <CartProvider>/)
   })
